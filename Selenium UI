@@ -1,0 +1,156 @@
+package NewInternet;
+
+import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.openqa.selenium.*;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.firefox.FirefoxDriver;
+
+
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import java.util.Set;
+import java.util.logging.Level;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+public class WebDriverInterfaceTest {
+    private WebDriver driver;
+    @BeforeEach
+    public void openBrowser(){
+        driver =  new FirefoxDriver();
+        //решает проблему где будет распологаться окно, при открытии
+        driver.manage().window().setPosition(new Point(1,1));
+    }
+    @AfterEach
+    public void closeBrowser(){
+        if (driver !=null){
+        driver.quit();
+        }
+    }
+    @Test
+    public void failedTest(){
+        driver = null;
+
+    }
+    @Test
+    public void urlTest(){
+        String urlToVisit = "https://the-internet.herokuapp.com/login/";
+     driver.get(urlToVisit);
+        //дает нам проверку зарегестирирован ли пользователь
+        String currentUrl = driver.getCurrentUrl();
+     assertTrue(currentUrl.endsWith("/login"));
+     assertEquals(urlToVisit, currentUrl);
+
+    }
+
+    @Test
+    public void titleTest(){
+        String urlToVisit = "https://the-internet.herokuapp.com/login/";
+        driver.get(urlToVisit);
+        // дает нам название страницы, как она называется во вкладке.
+        String title= driver.getTitle();
+        assertEquals("The Internet",title);
+    }
+    @Test
+    public void pageSourceTest(){
+        String urlToVisit = "https://the-internet.herokuapp.com/login/";
+        driver.get(urlToVisit);
+        // дает нам css страницы, элементы.
+        String source = driver.getPageSource();
+        System.out.println(source);
+    }
+    @Test
+    public void manageWindowTest(){
+        //дает нам вложенную структуру, открывает и закрывает окно вкладки, чтобы видеть как раскрывается на полном экране, чтобы не было проблем что кнопкас сьехала или что то не отображается.
+        String urlToVisit = "https://the-internet.herokuapp.com/login/";
+        driver.get(urlToVisit);
+        driver.manage().window().fullscreen();
+        driver.manage().window().minimize();
+        driver.manage().window().maximize();
+
+    }
+
+    @Test
+    public void manageSizeTest(){
+        String urlToVisit = "https://the-internet.herokuapp.com/login/";
+        driver.get(urlToVisit);
+        // обертка над двумя значениями ширина и длина, размер текущего окна
+        Dimension dimensionBefore = driver.manage().window().getSize();
+        System.out.println(dimensionBefore);
+        driver.manage().window().setSize(new Dimension(500,500));
+        Dimension dimensionAfter = driver.manage().window().getSize();
+        System.out.println(dimensionAfter);
+        // сравниваем размер действительно ли оно такое
+        assertEquals(new Dimension(500,500),dimensionAfter);
+
+    }
+    @Test
+    public void managePositionTest(){
+        String urlToVisit = "https://the-internet.herokuapp.com/login/";
+        driver.get(urlToVisit);
+        // где находиться окно на моем экране, также сравнивает по пикселямБ х и у самая верхняя левая точка моего окна
+        Point positionBefore = driver.manage().window().getPosition();
+        System.out.println(positionBefore);
+        driver.manage().window().setPosition(new Point(1,1));
+        Point positionAfter = driver.manage().window().getPosition();
+        System.out.println(positionAfter);
+        assertEquals(new Point(1,1), positionAfter);
+
+     }
+     @Test
+    public void implicitlySuccessTest(){
+        //позволяет сказать селениуму, если ты чего то не находишь на странице, подожди не торопись.
+        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(4, ChronoUnit.SECONDS.ordinal()));
+         String url = "https://the-internet.herokuapp.com/dynamic_loading/";
+         driver.get(url);
+         driver.findElement(By.cssSelector("#start button")).click();
+         //NoSuchElementException, нет такого элемента
+        String text =  driver.findElement(By.cssSelector("#finish")).getText();
+        assertEquals("Hello world", text);
+     }
+     @Test
+    public void manageCookieTest(){
+        // работа с куками, cookie_policy
+     //driver.get("https://www.labirint.ru/");
+      // Set<Cookie> Cookies = driver.manage().getCookies();
+      //driver.manage().getCookies();
+        //     Cookie cookie = new Cookie("cookie_policy");
+     // driver.manage().addCookie(cookie);
+       //driver.get("https://www.labirint.ru");
+     }
+     @Test
+    public void navigateTest(){
+
+                 String page1 = ("https://the-internet.herokuapp.com/");
+                 String page2 = ("https://the-internet.herokuapp.com/abtest");
+         driver.get(page1);
+         driver.get(page2);
+         //управление кнопками
+        driver.navigate().back();
+        assertEquals(page1,driver.getCurrentUrl());
+        //форвард это вернуться вперед
+        driver.navigate().forward();
+         assertEquals(page2,driver.getCurrentUrl());
+         //обновить страницу
+         driver.navigate().refresh();
+        assertEquals(page2,driver.getCurrentUrl());
+        //driver.navigate().to(); равнозначен драйвер гет.
+
+
+     }
+     @Test
+    public void windowHandlesTest(){
+        driver.get("https://the-internet.herokuapp.com/windows/");
+        driver.findElement(new By.ByLinkText("Click Here")).click();
+        String WindowHandle = driver.getWindowHandle();//текущая вкладка
+         Set <String> WindowHandles = driver.getWindowHandles();// все вкладки
+        assertEquals("New Window", driver.getTitle());
+       String[] tabs = new String[WindowHandles.size()];
+WindowHandles.toArray();
+         String FirstTab = tabs[0];//айдишник первой вкладки
+         String SecondTab = tabs[1];
+         driver.switchTo().window(SecondTab);//говорим куда переключиться
+}
